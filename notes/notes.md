@@ -211,8 +211,17 @@ We are also mounting (`-v`) our local directory to the /usr/src/app
 in the container
 
 The 'redis' service
-This is a off the shelf image, so no building.
+This is an off the shelf image, so no building.
 Since we only use it from inside our app, no ports, no volumes.
+
+The 'database' service
+Also an off the shelf image, so no building.
+Since we only use it from inside our app, no ports, no volumes.
+The image has an build in CMD ["postgres"] which starts the postgres
+server. It comes with psql build in. (and with pager set to off :-).
+
+We add env files to host our database variables.
+
 ```
 version: '3'
 
@@ -224,9 +233,17 @@ services:
       - "8080:3000"
     volumes:
       - .:/usr/src/app
+    env_file:
+      - .env/development/web
+      - .env/development/database
   
   redis:
     image: redis
+    
+  database:
+    image: postgres
+    env_file:
+      - .env/development/database
 ```
 
 note:
@@ -254,6 +271,9 @@ Start individual service
 
 Stop and cleanup
 `docker-compose down`
+
+Recreate a services container (when you changed some config)
+`docker-compose up -d --force-recreate web`
 
 # Diverse docker-compose commands
 
@@ -284,8 +304,31 @@ List networks:
 
 # Rails in Docker examples
 
-generating a welcome controller with an index action
+Generating a welcome controller with an index action
 `docker-compose exec web bin/rails g controller welcome index`
 
 Don't forget to chown the new files.
 
+Creating oudr development and test databases
+`docker-compose run --rm web bin/rails db:create`
+
+# Postgresql in Docker examples
+
+`docker-compose run --rm database psql -U postgres -h database`
+- `-U` user
+- `-h` host
+
+Put your database variables in env files. One per service:
+.env/development/web:
+```
+DATABASE_HOST=database
+```
+.env/development/database:
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD= secret
+POSTGRES_DB= myapp_development
+```
+
+Creating our development and test databases
+`docker-compose run --rm web bin/rails db:create`
