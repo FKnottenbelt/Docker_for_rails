@@ -210,6 +210,9 @@ of port 3000)
 We are also mounting (`-v`) our local directory to the /usr/src/app
 in the container
 
+The 'redis' service
+This is a off the shelf image, so no building.
+Since we only use it from inside our app, no ports, no volumes.
 ```
 version: '3'
 
@@ -221,6 +224,9 @@ services:
       - "8080:3000"
     volumes:
       - .:/usr/src/app
+  
+  redis:
+    image: redis
 ```
 
 note:
@@ -272,3 +278,14 @@ Cleaning up dangling containers:
 
 Cleaning up all:
 `docker system prune`
+
+List networks:
+`docker network ls`
+
+# Rails in Docker examples
+
+generating a welcome controller with an index action
+`docker-compose exec web bin/rails g controller welcome index`
+
+Don't forget to chown the new files.
+
