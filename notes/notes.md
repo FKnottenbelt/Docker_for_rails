@@ -1,4 +1,4 @@
-# starting a new container
+# Starting a new container
 `$ docker run [options] <image> <command>`
 
 This command starts a new container based on `<image>` and executes `<command>` inside the container
@@ -10,7 +10,7 @@ Variatie: throwaway container met --rm option
 `$ docker run --rm <image> <command>`
 This deletes the container after it completes
 
-# run and show containers
+# Run and show containers
 running containers:
 `$ docker ps`
 
@@ -20,7 +20,7 @@ all containers including stopped ones:
 removing container:
 `$ docker rm <container id> [<contaner id2>...]`
 
-# bash shell in container
+# Bash shell in container
 
 move into new directory
 
@@ -44,10 +44,10 @@ bash  Starting bash
 - exiting bash and stopping the container:
 `exit`
 
-### gives prompt (shell in the container). nb we are root:
+This gives you this prompt (shell in the container). nb we are root:
 root@05a29b49a35d:/#
 
-### moving to our new dir in the containter":
+### Moving to our new dir in the containter:
 root@05a29b49a35d:/# cd /usr/src/app
 
 # Generate a new Rails project using a container
@@ -68,8 +68,7 @@ gem 'sqlite3'
 to
 gem 'sqlite3', '~> 1.3.6'
 
-
-# dockerfile for rails
+# Dockerfile for rails
 
 create your Dockerfile in the root of the app
 
@@ -82,6 +81,10 @@ create your Dockerfile in the root of the app
    dir to /usr/src/app/  Nb current= wherever the dockerfile is
 - `WORKDIR /usr/src/app` cd into /usr/src/app
 - `RUN bundle install` which we want to do from inside our app dir
+- `CMD ["bin/rails", "s", "-b", "0.0.0.0"]` default command to run when
+   a container is started form the image. Here we start the rails server
+   and bind to all ip adressed (to give access to local host that rails
+   listens to)
 
 ```
 FROM ruby:2.6
@@ -93,14 +96,16 @@ COPY . /usr/src/app/
 
 WORKDIR /usr/src/app
 RUN bundle install
+
+CMD ["bin/rails", "s", "-b", "0.0.0.0"]
 ```
 
-# change file ownership on container files (linux only)
+# C hange file ownership on container files (linux only)
 `sudo chown <your-user>:<your-group> -R myapp/`
 so on AWS:
 `sudo chown ec2-user:ec2-user -R myapp/`
 
-# building our image
+# Building our image
 
 `$ docker build [options] path/to/build/directory`
 
@@ -112,6 +117,7 @@ and one final one. It is not a file.
 
 See image with `$ docker images`
 
+# Running our image as a container
 on droplet:
 `docker run -p 3000:3000 <image id> bin/rails s -b 0.0.0.0`
 then go to http://178.128.252.150:3000
@@ -126,3 +132,42 @@ on aws
      accessible from inside the container which listens to 
      [ip addres of container]:3000 instead of localhost:3000
      
+running a named/taged image:
+`docker run -p <local port>:<containter port> <image name: tag> bin/rails s -b 0.0.0.0`
+
+running something else in your container (not the rails sever) like listing
+our Rake tasks:
+`docker run -p 8080:3000 railsapp bin/rails -T`
+
+# Tagging existing image
+
+Adding a image name
+`$ docker tag <image id> <new image name>` nb image name = repository
+example:
+`docker tag be99ae8996a0 railsapp`
+
+Adding a tag (other than the default 'latest') to image
+`$ docker tag <image name> <image name:tag>`
+example:
+`docker tag railsapp railsapp:1.0`
+
+note same image id:
+```
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+railsapp            1.0                 be99ae8996a0        20 hours ago        1.02GB
+railsapp            latest              be99ae8996a0        20 hours ago        1.02GB
+ruby                2.6                 2d6f7a467f2c        9 days ago          870MB
+```
+
+# Tagging new image when building with -t
+
+`$ docker build -t <image name> -t <image name:tag>`
+example
+`docker build -t railsapp -t railsapp:1.0`
+
+# Actions:
+
+- change dockerfile ->
+  - rebuild image `docker build -t railsapp .`
+  - run new image `docker run -p 8080:3000 railsapp`
+      
