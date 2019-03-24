@@ -165,9 +165,22 @@ ruby                2.6                 2d6f7a467f2c        9 days ago          
 example
 `docker build -t railsapp -t railsapp:1.0`
 
+
+# Dockerignore
+add a .dockerignore file to your project
+
+```
+# Git
+.git
+.gitignore
+
+# Logs
+log/*
+```
+
 # Actions:
 
 - change dockerfile ->
   - rebuild image `docker build -t railsapp .`
   - run new image `docker run -p 8080:3000 railsapp`
-      
+
