@@ -119,3 +119,10 @@ then go to http://178.128.252.150:3000
 on aws
 `docker run -p 8080:3000 <image id> bin/rails s -b 0.0.0.0`
 
+`-p` port localport:containterport
+`-b` binding container to an ip adress. 0.0.0.0 is a special
+     adress that means 'all IPv4 address on this machine'. 
+     You need this because rails listens to localhost that is not
+     accessible from inside the container which listens to 
+     [ip addres of container]:3000 instead of localhost:3000
+     
