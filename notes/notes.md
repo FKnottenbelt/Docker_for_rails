@@ -77,6 +77,8 @@ create your Dockerfile in the root of the app
 - `RUN apt-get install -yqq --no-install-recommends nodejs` 
    y = yes to any prompts, qq = quiet mode, 
    --no-install-recommends = do not install nonessential packages
+   Adding these together in one command (&&) will also update
+   package list if only intall changes
 - `COPY . /usr/src/app/` copy all files from our local current (.)
    dir to /usr/src/app/  Nb current= wherever the dockerfile is
 - `WORKDIR /usr/src/app` cd into /usr/src/app
@@ -89,8 +91,8 @@ create your Dockerfile in the root of the app
 ```
 FROM ruby:2.6
 
-RUN apt-get update -yqq
-RUN apt-get install -yqq --no-install-recommends nodejs
+RUN apt-get update -yqq && apt-get install -yqq --no-install-recommends \
+   nodejs
 
 COPY . /usr/src/app/
 
