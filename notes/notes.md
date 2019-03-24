@@ -222,6 +222,10 @@ server. It comes with psql build in. (and with pager set to off :-).
 
 We add env files to host our database variables.
 
+We use a named volume to store our data seperatly from the container.
+We define the named volume as db_data. Then we mount this at
+the /var/lib/postgresql/data directory.
+
 ```
 version: '3'
 
@@ -244,6 +248,11 @@ services:
     image: postgres
     env_file:
       - .env/development/database
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    
+volumes:
+  db_data:
 ```
 
 note:
@@ -309,8 +318,16 @@ Generating a welcome controller with an index action
 
 Don't forget to chown the new files.
 
-Creating oudr development and test databases
+Creating our development and test databases
 `docker-compose run --rm web bin/rails db:create`
+
+Generate basic UserContoller
+`docker-compose exec web \
+   bin/rails g scaffold User \
+   first_name:string last_name:string`
+   
+And running the migration
+`docker-compose exec web bin/rails db:migrate`
 
 # Postgresql in Docker examples
 
@@ -332,3 +349,8 @@ POSTGRES_DB= myapp_development
 
 Creating our development and test databases
 `docker-compose run --rm web bin/rails db:create`
+
+Note: when mounting volume goes wrong and you get password error
+not only remove database, but also remove volume
+`docker volume rm myapp_db_data`.
+List volumes with `docker volume ls`
