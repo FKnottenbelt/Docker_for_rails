@@ -81,6 +81,9 @@ create your Dockerfile in the root of the app
    package list if only intall changes
 - `COPY . /usr/src/app/` copy all files from our local current (.)
    dir to /usr/src/app/  Nb current= wherever the dockerfile is
+   You will want to split this in a update Gemfile part and an 
+   update files part to avoid re-installing all gems when changing
+   a file.
 - `WORKDIR /usr/src/app` cd into /usr/src/app
 - `RUN bundle install` which we want to do from inside our app dir
 - `CMD ["bin/rails", "s", "-b", "0.0.0.0"]` default command to run when
@@ -94,10 +97,11 @@ FROM ruby:2.6
 RUN apt-get update -yqq && apt-get install -yqq --no-install-recommends \
    nodejs
 
-COPY . /usr/src/app/
-
+COPY Gemfile* /usr/src/app/
 WORKDIR /usr/src/app
 RUN bundle install
+
+COPY . /usr/src/app/
 
 CMD ["bin/rails", "s", "-b", "0.0.0.0"]
 ```
@@ -122,7 +126,7 @@ See image with `$ docker images`
 # Running our image as a container
 on droplet:
 `docker run -p 3000:3000 <image id> bin/rails s -b 0.0.0.0`
-then go to http://178.128.252.150:3000
+then go to `http://<droplet ip adress>:3000`
 
 on aws
 `docker run -p 8080:3000 <image id> bin/rails s -b 0.0.0.0`
