@@ -245,3 +245,30 @@ Stop compose:
 Start individual service
 - `docker-compose start <service_name>`
 - `docker-compose restart <service_name>` picks up config changes
+
+Stop and cleanup
+`docker-compose down`
+
+# Diverse docker-compose commands
+
+View container logs
+`docker-compose logs -f <service_name>` ^C to quit
+
+Run an one-off command
+`docker-compose run --rm <service_name> <command>` in a new 
+ seperate container.
+ example: `docker-compose run --rm web echo 'a random command'>`
+
+`docker-compose exec <service_name> <command>` in a running container
+
+Rebuilding images
+`docker-compose build <service_name>`
+
+Cleaning up dangling images:
+`docker image prune`
+
+Cleaning up dangling containers:
+`docker image prune`
+
+Cleaning up all:
+`docker system prune`
