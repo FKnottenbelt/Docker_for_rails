@@ -1,3 +1,6 @@
+# Docker CLI docs:
+https://docs.docker.com/engine/reference/commandline/docker/
+
 # Starting a new container
 `$ docker run [options] <image> <command>`
 
@@ -18,7 +21,7 @@ all containers including stopped ones:
 `$ docker ps -a`
 
 removing container:
-`$ docker rm <container id> [<contaner id2>...]`
+`$ docker rm <container_id> [<contaner_id2>...]`
 
 # Bash shell in container
 
@@ -125,11 +128,11 @@ See image with `$ docker images`
 
 # Running our image as a container
 on droplet:
-`docker run -p 3000:3000 <image id> bin/rails s -b 0.0.0.0`
-then go to `http://<droplet ip adress>:3000`
+`docker run -p 3000:3000 <image_id> bin/rails s -b 0.0.0.0`
+then go to `http://<droplet_ip_adress>:3000`
 
 on aws
-`docker run -p 8080:3000 <image id> bin/rails s -b 0.0.0.0`
+`docker run -p 8080:3000 <image_id> bin/rails s -b 0.0.0.0`
 
 `-p` port localport:containterport
 `-b` binding container to an ip adress. 0.0.0.0 is a special
@@ -139,7 +142,7 @@ on aws
      [ip addres of container]:3000 instead of localhost:3000
      
 running a named/taged image:
-`docker run -p <local port>:<containter port> <image name: tag> bin/rails s -b 0.0.0.0`
+`docker run -p <local port>:<containter_port> <image_name: tag> bin/rails s -b 0.0.0.0`
 
 running something else in your container (not the rails sever) like listing
 our Rake tasks:
@@ -148,12 +151,12 @@ our Rake tasks:
 # Tagging existing image
 
 Adding a image name
-`$ docker tag <image id> <new image name>` nb image name = repository
+`$ docker tag <image id> <new_image_name>` nb image name = repository
 example:
 `docker tag be99ae8996a0 railsapp`
 
 Adding a tag (other than the default 'latest') to image
-`$ docker tag <image name> <image name:tag>`
+`$ docker tag <image_name> <image_name:tag>`
 example:
 `docker tag railsapp railsapp:1.0`
 
@@ -167,7 +170,7 @@ ruby                2.6                 2d6f7a467f2c        9 days ago          
 
 # Tagging new image when building with -t
 
-`$ docker build -t <image name> -t <image name:tag>`
+`$ docker build -t <image_name> -t <image_name:tag>`
 example
 `docker build -t railsapp -t railsapp:1.0`
 
@@ -190,3 +193,55 @@ log/*
   - rebuild image `docker build -t railsapp .`
   - run new image `docker run -p 8080:3000 railsapp`
 
+# Docker compose config file
+
+NB: docker compose needs to be installed seperatly
+https://docs.docker.com/compose/install/
+
+docker-compose.yml file. Note de dash instead of underscore.
+
+we are using version 3 of docker-compose. Find latest on:
+docs.docker.com/compose/compose-file/compose-versioning/
+
+The 'web' service
+We are calling our rails server 'web', it needs to be build
+(since it's a custom image) and we are running on AWS (8080 instead
+of port 3000)
+We are also mounting (`-v`) our local directory to the /usr/src/app
+in the container
+
+```
+version: '3'
+
+services:
+
+  web:
+    build: .
+    ports:
+      - "8080:3000"
+    volumes:
+      - .:/usr/src/app
+```
+
+note:
+switch of Ruby's output buffering -> add to top config/boot:
+`$stdout.sync = true`
+
+# Running docker compose
+
+Compose up:
+`$ docker-compose up`  exit with ^C
+
+or in detached mode:
+`$ docker-compose up -d`
+
+Check running services:
+`docker-compose ps`
+
+Stop compose:
+- `docker-compose stop`
+- `docker-compose stop <service_name>`
+
+Start individual service
+- `docker-compose start <service_name>`
+- `docker-compose restart <service_name>` picks up config changes
