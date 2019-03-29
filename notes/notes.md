@@ -110,7 +110,8 @@ CMD ["bin/rails", "s", "-b", "0.0.0.0"]
 ```
 
 # C hange file ownership on container files (linux only)
-`sudo chown <your-user>:<your-group> -R myapp/`
+`sudo chown <your-user>:<your-group> -R myapp/` or
+`sudo chown <your-user>:<your-group> -R .`
 so on AWS:
 `sudo chown ec2-user:ec2-user -R myapp/`
 
@@ -418,3 +419,24 @@ Add the webpacker deb server to the docker-compose.yml
     environment:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
  ```
+
+# Adding RSpec
+
+In the Gemfile add rspec-rails gem:
+```
+group :development, :test do
+  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails', '~> 3.8'
+end
+```
+
+Install RSpec (after rebuilding):
+`docker-compose exec web bin/rails generate rspec:install`
+(chown files)
+
+Run tests:
+`docker-compose exec web bin/rails spec`
+
+Generate testfiles:
+`docker-compose exec web bin/rails generate rspec:model user`
