@@ -354,3 +354,67 @@ Note: when mounting volume goes wrong and you get password error
 not only remove database, but also remove volume
 `docker volume rm myapp_db_data`.
 List volumes with `docker volume ls`
+
+# JS in docker: rails as an API
+
+If you have a seperate front end:
+- Rename you web service, since it's now more of an API
+- create a custom image for running your JavaScript front-end app
+- create a separate, front-end service in your docker-compose.yml
+
+# Rails JS frontend with Webpacker
+
+NB: I can't get this to work, so might need editing.
+
+Webpacker requires Yarn. Which needs an update to the Dockerfile
+```
+# Allow apt to work with https-based sources
+RUN apt-get update -yqq && apt-get install -yqq --no-install-recommends \
+  apt-transport-https
+
+# Ensure we install an up-to-date version of Node
+# see https://github.com/yarnpkg/yarn/issues/2888
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+
+# Ensure latest packages for Yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | \
+  tee /etc/apt/sources.list.d/yarn.list
+```
+
+and add Yarn to the to install packages.
+
+Add webpacker gem to Gemfile
+
+Install webpacker:
+`docker-compose run web bin/rails webpacker:install`
+and webpacker intergration:
+`docker-compose run web bin/rails webpacker:install:react`
+
+Add the webpacker deb server to the docker-compose.yml
+```
+  web:
+    build: .
+    ports:
+      - "8080:3000"
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env/development/web
+      - .env/development/database
+    environment:
+      - WEBPACKER_DEV_SERVER_HOST=webpack_dev_server
+
+  webpack_dev_server:
+    build: .
+    command: ./bin/webpack-dev-server
+    ports:
+      - 3035:3035
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env/development/web
+      - .env/development/database
+    environment:
+      - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
+ ```
