@@ -285,6 +285,11 @@ Stop and cleanup
 Recreate a services container (when you changed some config)
 `docker-compose up -d --force-recreate web`
 
+Workflow after changing anything in your build (that has impact in your dockerfile):
+`docker-compose build <service>`
+`docker-compose stop <service>`
+`docker-compose up -d --force-recreate <service>`
+
 # Diverse docker-compose commands
 
 View container logs
@@ -440,3 +445,26 @@ Run tests:
 
 Generate testfiles:
 `docker-compose exec web bin/rails generate rspec:model user`
+
+# system tests with capybara
+
+group :development, :test do
+  # Call 'byebug' anywhere in the code to stop execution and get a debugger c$
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails', '~> 3.8'
+  gem 'capybara', '~> 3.7'
+end
+
+add a directory spec/sytem
+and add a spec.rb file and write test.
+
+Switch to RackTestdriver:
+add to spec/railshelper.rb (in RSpec.configure do)
+```
+config.before(:each, type: :system) do
+  driven_by :rack_test
+end
+```
+
+Run your systemstest:
+`docker-compose exec web rspec spec/system/`
