@@ -109,7 +109,7 @@ COPY . /usr/src/app/
 CMD ["bin/rails", "s", "-b", "0.0.0.0"]
 ```
 
-# C hange file ownership on container files (linux only)
+# Change file ownership on container files (linux only)
 `sudo chown <your-user>:<your-group> -R myapp/` or
 `sudo chown <your-user>:<your-group> -R .`
 so on AWS:
@@ -294,6 +294,11 @@ Workflow after changing anything in your build (that has impact in your dockerfi
 
 View container logs
 `docker-compose logs -f <service_name>` ^C to quit
+
+Interactive session with access to other containers
+Everything is up except for the container you need (web in this case)
+`docker-compose run --service-ports web`
+usefull for debugging with byebug
 
 Run an one-off command
 `docker-compose run --rm <service_name> <command>` in a new 
