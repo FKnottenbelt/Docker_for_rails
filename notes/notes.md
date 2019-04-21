@@ -451,15 +451,15 @@ Run tests:
 Generate testfiles:
 `docker-compose exec web bin/rails generate rspec:model user`
 
-# system tests with capybara
-
+# System tests with capybara
+```ruby
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger c$
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails', '~> 3.8'
   gem 'capybara', '~> 3.7'
 end
-
+```
 add a directory spec/sytem
 and add a spec.rb file and write test.
 
@@ -473,3 +473,76 @@ end
 
 Run your systemstest:
 `docker-compose exec web rspec spec/system/`
+
+# Testing Javascript
+To test js, write RSpec test with js: true
+add Capybara and Selenium driver gems:
+```ruby
+group :development, :test do
+  # Call 'byebug' anywhere in the code to stop execution and get a debugger con$
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails', '~> 3.8'
+  gem 'capybara', '~> 3.7'
+  gem 'selenium-webdriver', '~> 3.14'
+end
+```
+
+add a Chrome container:
+```
+  selenium_chrome:
+    image: selenium/standalone-chrome-debug
+    logging:
+      driver: none
+    ports:
+      - '5900:5900'
+```
+Make web listen to port 4000 too
+```
+   web:
+    build: .
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env/development/web
+      - .env/development/database
+  
+```
+bring your new service up:
+`docker-compose up -d selenium_chrome`
+
+Configure Capybara to use Chrome running in a container by
+registering the selenium driver, connecting our host
+`selenium_chrome` service with the port and url that Selenium
+listens to. ('http://<host>:4444/wd/hub')
+in spec/support/capybara.rb
+```ruby
+Capybara.register_driver :headless_selenium_chrome_in_container do |app|
+  Capybara::Selenium::Driver.new app,
+    browser: :remote,
+    url: 'http://selenium_chrome:4444/wd/hub',
+    desired_capabilities: Selenium::WebDriver::Remote::Capabilities.chrome( 
+      chromeOptions: {args: %w(headless disable-gpu)}
+      )
+end
+```
+
+make RSpec use it spec/rails_helper.rb)
+```ruby
+   config.before(:each, type: :system) do
+    driven_by :rack_test
+  end
+
+  config.before(:each, type: :system, js: true) do
+    driven_by :headless_selenium_chrome_in_container
+    Capybara.server_host = '0.0.0.0'
+    Capybara.server_port = 4000
+    Capybara.app_host = 'http://web:4000'
+  end
+```
+
+Run your systemstest:
+`docker-compose exec web rspec spec/system/`
+
