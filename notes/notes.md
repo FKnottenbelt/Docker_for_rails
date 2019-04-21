@@ -543,4 +543,7 @@ make RSpec use it spec/rails_helper.rb)
   end
 ```
 
+Run your systemstest:
+`docker-compose exec web rspec spec/system/`
+
 
